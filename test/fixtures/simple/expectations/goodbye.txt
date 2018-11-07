@@ -1,0 +1,4 @@
+This is a header.
+Goodbye, Adam!
+
+This is a footer.

@@ -1,0 +1,25 @@
+env:
+  node: true
+
+extends: 'eslint:recommended'
+
+parserOptions:
+  sourceType: module
+
+  # NB. the only ECMAScript 6 feature used in this module is const,
+  # which is support across all node versions
+  ecmaVersion: 6
+
+rules:
+  indent:
+    - error
+    - 2
+  linebreak-style:
+    - error
+    - unix
+  quotes:
+    - error
+    - single
+  semi:
+    - error
+    - always

@@ -1,0 +1,29 @@
+{
+  "name": "gnathite",
+  "version": "1.0.0",
+  "license": "MIT",
+  "keywords": [
+    "email",
+    "html",
+    "txt",
+    "template"
+  ],
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/as3richa/gnathite.git"
+  },
+  "scripts": {
+    "test": "mocha",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "handlebars": "^4.0.12",
+    "juice": "^5.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.8.0",
+    "mandible": "^0.1.0",
+    "mocha": "^5.2.0"
+  }
+}
