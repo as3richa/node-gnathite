@@ -14,6 +14,29 @@ function readFixture() {
   return fs.readFileSync(fixture.apply(null, arguments), 'utf8');
 }
 
+function copyFiles(filepaths, to) {
+  filepaths.forEach(function(filepath) {
+    fs.copyFileSync(filepath, path.join(to, path.basename(filepath)));
+  });
+}
+
+function rm(filepath) {
+  const stat = fs.statSync(filepath);
+
+  if(!stat.isDirectory()) {
+    fs.unlinkSync(filepath);
+    return;
+  }
+
+  const filenames = fs.readdirSync(filepath);
+
+  filenames.forEach(function(filename) {
+    rm(path.join(filepath, filename));
+  });
+
+  fs.rmdirSync(filepath);
+}
+
 describe('Gnathite', function() {
   describe('basic functionality', function() {
     const gnat = new Gnathite(fixture('simple'));
@@ -208,12 +231,91 @@ describe('Gnathite', function() {
     it('is idempotent', function(done) {
       const gnat = new Gnathite(fixture('simple'));
 
-      gnat.render('welcome', {}, function(err, firstTxt, firstHtml) {
-        gnat.render('welcome', {}, function(err, secondTxt, secondHtml) {
-          assert.equal(firstTxt, secondTxt);
-          assert.equal(firstHtml, secondHtml);
+      gnat.render('welcome', { name: 'a' }, function(err, firstTxtEmail, firstHtmlEmail) {
+        gnat.render('welcome', { name: 'a' }, function(err, secondTxtEmail, secondHtmlEmail) {
+          assert.equal(firstTxtEmail, secondTxtEmail);
+          assert.equal(firstHtmlEmail, secondHtmlEmail);
 
           done();
+        });
+      });
+    });
+
+    it('does not cache email contents', function(done) {
+      const gnat = new Gnathite(fixture('simple'));
+
+      gnat.render('welcome', { name: 'a' }, function(err, firstTxtEmail, firstHtmlEmail) {
+        gnat.render('welcome', { name: 'b' }, function(err, secondTxtEmail, secondHtmlEmail) {
+          assert.notEqual(firstTxtEmail, secondTxtEmail);
+          assert.notEqual(firstHtmlEmail, secondHtmlEmail);
+
+          done();
+        });
+      });
+    });
+
+    context('temporary directory', function() {
+      var directory;
+
+      beforeEach(function() {
+        directory = fs.mkdtempSync('test/tmp/');
+      });
+
+      afterEach(function() {
+        rm(directory);
+      });
+
+      it('does not reread templates if caching is enabled', function(done) {
+        copyFiles(
+          [
+            fixture('simple', 'layout.html'),
+            fixture('simple', 'layout.txt'),
+            fixture('simple', 'welcome.html'),
+            fixture('simple', 'welcome.txt')
+          ],
+          directory
+        );
+
+        const gnat = new Gnathite(directory);
+
+        gnat.render('welcome', { name: 'a' }, function(err, firstTxtEmail, firstHtmlEmail) {
+          fs.copyFileSync(fixture('simple', 'goodbye.txt'), path.join(directory, 'welcome.txt'));
+          fs.copyFileSync(fixture('simple', 'goodbye.html'), path.join(directory, 'welcome.txt'));
+
+          gnat.render('welcome', { name: 'a' }, function(err, secondTxtEmail, secondHtmlEmail) {
+            assert(!err);
+            assert.equal(firstTxtEmail, secondTxtEmail);
+            assert.equal(firstHtmlEmail, secondHtmlEmail);
+
+            done();
+          });
+        });
+      });
+
+      it('rereads templates between calls to render if caching is disabled', function(done) {
+        copyFiles(
+          [
+            fixture('simple', 'layout.html'),
+            fixture('simple', 'layout.txt'),
+            fixture('simple', 'welcome.html'),
+            fixture('simple', 'welcome.txt')
+          ],
+          directory
+        );
+
+        const gnat = new Gnathite(directory, false);
+
+        gnat.render('welcome', { name: 'a' }, function(err, firstTxtEmail, firstHtmlEmail) {
+          fs.copyFileSync(fixture('simple', 'goodbye.txt'), path.join(directory, 'welcome.txt'));
+          fs.copyFileSync(fixture('simple', 'goodbye.html'), path.join(directory, 'welcome.html'));
+
+          gnat.render('welcome', { name: 'a' }, function(err, secondTxtEmail, secondHtmlEmail) {
+            assert(!err);
+            assert.notEqual(firstTxtEmail, secondTxtEmail);
+            assert.notEqual(firstHtmlEmail, secondHtmlEmail);
+
+            done();
+          });
         });
       });
     });

@@ -23,3 +23,8 @@ rules:
   semi:
     - error
     - always
+  consistent-this:
+    - error
+    - self
+  no-invalid-this:
+    - error
