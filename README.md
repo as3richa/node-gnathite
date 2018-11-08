@@ -1,6 +1,6 @@
 # gnathite
 
-Dead-simple HTML and plaintext email templates with Handlebars. A workalike reimplementation of [mandible](https://github.com/defunctzombie/node-mandible), since Mandible is now unmaintained (and is dependent on multiple vulnerable packages).
+Dead-simple HTML and plaintext email templates with Handlebars. A workalike reimplementation of [mandible](https://github.com/defunctzombie/node-mandible), since mandible is now unmaintained (and is dependent on multiple vulnerable packages).
 
 ## API
 

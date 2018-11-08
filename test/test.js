@@ -218,4 +218,30 @@ describe('Gnathite', function() {
       });
     });
   });
+
+  /* Handlebars pre-4 had an XSS vulnerability if you interpolated into an unquoted
+   * HTML attribute (like we do in the fixture for this spec).
+   * Ref: https://www.npmjs.com/advisories/61
+   * Even in the most recent version of Handlebars, unquoted, interpolated HTML
+   * attributes allow you to mung up the HTML in hilarious ways (see the fixture). I
+   * don't understand how this happens or why Handlebars would allow this; it seems
+   * like they must be reasoning about HTML attributes internally to have this
+   * bizarre behavior (which is a strange decision for an unopinionated templating language).
+   * All this being said:
+   * - The terrible find-replace thingy in Handlebars 4+ probably does prevent an
+   *   exploitable XSS (even though you can mess with the HTML), because you can't
+   *   inject attributes with arbitrary values (since = is escaped)
+   * - Handlebars <= 3 does indeed have a trivial XSS */
+
+  it('is not vulnerable to an HTML attribute-based XSS', function(done) {
+    const gnat = new Gnathite(fixture('maybe-xssable'));
+    const expectation = readFixture('maybe-xssable', 'expectations', 'xss.html')
+
+    gnat.html('xss', { url: 'derp onload=alert(1)' }, function(err, htmlEmail) {
+      assert(!err);
+      assert.equal(htmlEmail, expectation);
+
+      done();
+    });
+  });
 });
