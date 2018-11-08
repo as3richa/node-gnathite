@@ -1,0 +1,80 @@
+#!/usr/bin/env node
+
+const USAGE =
+  '  usage: yarn preview <directory>\n\n' +
+  '  Spawns an HTTP server on port 3000 (or on $PORT if given); a request to\n' +
+  '  http://localhost:$PORT/emailName.html?alpha=1&beta=2 yields the HTML email\n' +
+  '  called `emailName` from the directory given on the command line, rendered with\n' +
+  '  locals `{ alpha: \'1\', beta: \'2\' }`; likewise for the `.txt` extension.';
+
+if(process.argv.length !== 3) {
+  console.error(USAGE);
+  process.exit(1);
+}
+
+const fs       = require('fs');
+const express  = require('express');
+const Gnathite = require('../src/index');
+
+const port = parseInt(process.env.PORT || '3000');
+const directory = process.argv[2];
+
+const app = express();
+const gnat = new Gnathite(directory);
+
+app.get('/', function(req, res, next) {
+  fs.readdir(directory, function(err, items) {
+    if(err) {
+      next(err);
+      return;
+    }
+
+    items.sort();
+
+    var text = 'Emails:\n';
+
+    for(var i = 0; i < items.length; i ++) {
+      if(items[i].endsWith('.html') || items[i].endsWith('.txt')) {
+        text += ' - ' + items[i] + '\n';
+      }
+    }
+
+    res.setHeader('Content-Type', 'text/plain');
+    res.send(text);
+  });
+});
+
+app.get('/:emailName.html', function(req, res, next) {
+  const emailName = req.params.emailName;
+  const locals = req.query;
+
+  gnat.html(emailName, locals, function(err, htmlEmail) {
+    if(err) {
+      next(err);
+      return;
+    }
+
+    res.setHeader('Content-Type', 'text/html');
+    res.send(htmlEmail);
+  });
+});
+
+app.get('/:emailName.txt', function(req, res, next) {
+  const emailName = req.params.emailName;
+  const locals = req.query;
+
+  gnat.txt(emailName, locals, function(err, txtEmail) {
+    if(err) {
+      next(err);
+      return;
+    }
+
+    res.setHeader('Content-Type', 'text/plain');
+    res.send(txtEmail);
+  });
+});
+
+const server = app.listen(port, function() {
+  const address = server.address();
+  console.log('preview server listening on ' + address.address + ' port ' + address.port);
+});

@@ -15,7 +15,8 @@
   },
   "scripts": {
     "test": "mocha",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "preview": "script/preview"
   },
   "dependencies": {
     "handlebars": "^4.0.12",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "eslint": "^5.8.0",
+    "express": "^4.16.4",
     "mandible": "^0.1.0",
     "mocha": "^5.2.0"
   }

@@ -62,7 +62,7 @@ Gnathite.prototype.html = function(emailName, locals, cb) {
 
       locals.body = bodyTemplate(locals);
 
-      const unjuicedHtmlEmail = layoutTemplate(locals)
+      const unjuicedHtmlEmail = layoutTemplate(locals);
 
       const juiceOptions = {
         webResources: { 

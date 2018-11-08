@@ -46,6 +46,10 @@ const uncachedMailer = new Gnathite('path/to/templates', false);
 
 [juice](https://www.npmjs.com/package/juice) is used to transform stylesheets in the rendered HTML into inline per-element styles. A stylesheet can be specified in a layout, either as a `<style>` tag, or as a `<link>` tag referencing a CSS file.
 
+## Previews
+
+`yarn preview <directory>` spawns an HTTP server that allows you to render your templates in your browser. Try `yarn preview test/fixtures/simple` and open `http://localhost:3000/welcome.html?title=foo&name=bar` in your browser.
+
 ## Differences to Mandible
 
 - Errors from `fs` are no longer thrown, and are rather passed as the first argument to the callback
